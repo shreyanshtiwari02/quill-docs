@@ -3,17 +3,18 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
+  Navigate
 } from "react-router-dom"
 import { v4 as uuidV4 } from "uuid"
+import Home from "./HomePage"
 
 function App() {
   return (
     <Router>
-        <Routes>
-          <Route path="/" element={<a href={`/documents/${uuidV4()}`}>create document</a>} />
-          <Route path='/documents/:id' element={ <TextEditor />}/>
-        </Routes>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/documents/:roomId" element={<TextEditor />} />
+      </Routes>
     </Router>
   )
 }
