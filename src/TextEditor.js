@@ -3,9 +3,9 @@ import Quill from "quill"
 import "quill/dist/quill.snow.css"
 import { io } from "socket.io-client"
 import { useParams } from "react-router-dom"
-
+import {Popup} from 'reactjs-popup';
 // time to save document
-const SAVE_INTERVAL_MS = 2000
+const timeToSave = 2000
 
 //toolbar options for docs
 const TOOLBAR_OPTIONS = [
@@ -21,7 +21,8 @@ const TOOLBAR_OPTIONS = [
 ]
 
 export default function TextEditor() {
-  const { id: documentId } = useParams()
+  const documentId  = useParams()["roomId"] // fetching the document id
+  console.log(useParams());
   const [socket, setSocket] = useState()
   const [quill, setQuill] = useState()
 
@@ -43,16 +44,34 @@ export default function TextEditor() {
       quill.setContents(document)
       quill.enable()
     })
-
+    socket.emit("user-joined");
     socket.emit("get-document", documentId)
   }, [socket, quill, documentId])
 
   useEffect(() => {
     if (socket == null || quill == null) return
 
+    const handler = () =>{
+  return (
+    <Popup trigger={<button>Trigger</button>} position="right center">
+      <div>Popup content here</div>
+    </Popup>
+  );
+}
+
+    socket.on("pop-up", handler)
+
+    return () => {
+      socket.off("pop-up", handler)
+    }
+  }, [socket])
+
+  useEffect(() => {
+    if (socket == null || quill == null) return
+
     const interval = setInterval(() => {
       socket.emit("save-document", quill.getContents())
-    }, SAVE_INTERVAL_MS)
+    }, timeToSave)
 
     return () => {
       clearInterval(interval)
@@ -62,7 +81,7 @@ export default function TextEditor() {
   useEffect(() => {
     if (socket == null || quill == null) return
 
-    const handler = delta => {
+    const handler = (delta) => {
       quill.updateContents(delta)
     }
     socket.on("receive-changes", handler)
@@ -101,4 +120,4 @@ export default function TextEditor() {
     setQuill(q)
   }, [])
   return <div className="container" ref={wrapperRef}></div>
-}
+} 
