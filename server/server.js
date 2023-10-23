@@ -17,6 +17,11 @@ io.on("connection", socket => {
   socket.on("get-document", async documentId => {
     const document = await findOrCreateDocument(documentId)
     socket.join(documentId)
+    
+    socket.on("user-joined", () => {
+      socket.broadcast.to(documentId).emit("pop-up")
+    })
+
     socket.emit("load-document", document.data)
 
     socket.on("send-changes", delta => {
